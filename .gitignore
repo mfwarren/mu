@@ -1,0 +1,12 @@
+*.pyc
+__pycache__
+MANIFEST
+build
+dist
+setuptools-*
+*.so
+*.egg
+*.egg-info
+nohup.out
+.coverage
+.tox
