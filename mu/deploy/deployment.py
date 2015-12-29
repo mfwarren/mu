@@ -18,6 +18,7 @@ import shutil
 from mu import util
 from .package import Package, BUILD_PATH
 
+
 class Deployment(object):
     """
     A Deployment is the collection of Packages along with the meta data required
@@ -44,11 +45,15 @@ class Deployment(object):
     def create(self):
         app = self.load()
         self.clean()
-        for endpoint in app.routes:
-            for handler in [h for h in dir(app.routes[endpoint]) if h.startswith('on_')]:
-                package = Package(endpoint, app.routes[endpoint], handler)
-                package.make_entry_function(self.app_uri.split(":")[0], self.app_uri.split(":")[1])
-                package.make_zip()
+        package = Package(app.routes)
+        package.make_entry_function(self.app_uri.split(":")[0], self.app_uri.split(":")[1])
+        package.make_zip()
+
+        # for endpoint in app.routes:
+        #     for handler in [h for h in dir(app.routes[endpoint]) if h.startswith('on_')]:
+        #         package = Package(endpoint, app.routes[endpoint], handler)
+        #         package.make_entry_function(self.app_uri.split(":")[0], self.app_uri.split(":")[1])
+        #         package.make_zip()
 
 if __name__ == '__main__':
     deployment = Deployment('sample:api')

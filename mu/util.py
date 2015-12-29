@@ -13,8 +13,10 @@
 # limitations under the License.
 
 import sys
+import os
 
 from mu.errors import AppImportError
+
 
 def import_app(module):
     parts = module.split(":", 1)

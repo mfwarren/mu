@@ -16,6 +16,8 @@ import zipfile
 import re
 import os
 
+from jinja2 import Template
+
 try:
     import zlib
     compression = zipfile.ZIP_DEFLATED
@@ -26,34 +28,58 @@ ENTRY_FILENAME = '_generated.py'
 BUILD_PATH = './build'
 
 TEMPLATE = """
-from {module} import {object}
+{% for module, resources in resources %}
+from {module} import {resource}
+{% endfor %}
 from mu import Request, Response
 
-def handler(event, context):
+{% for handler in handlers %}
+def {handler.resource}_{handler.method}_handler(event, context):
     request = Request()
     response = Response()
-    api.routes['{uri_template}'].{method}(request, response)
+    api.routes['{handler.uri_template}'].{handler.method}(request, response)
     return response.body
 
+{% endfor %}
 """
-class Package(object):
-    """
-    each API Endpoint will be turned into a package for upload to Lambda.
-    all requirements get included with local code and some generated code
-    into a single .zip file
-    """
 
-    def __init__(self, uri_template, resource, method):
-        self.uri_template = uri_template
+
+class Handler(object):
+    """
+    Information about each endpoint hander function
+    """
+    def __init__(self, resource, method, module, uri_template):
         self.resource = resource
         self.method = method
+        self.module = module
+        self.uri_template = uri_template
+
+
+class Package(object):
+    """
+    Take all the code, add a handler function for each endpoint, zip everything up
+    for uploading to Lambda.
+    """
+
+    def __init__(self, routes, app_uri):
+
+        self.handlers = []
+        self.resources = set()
+
+        for endpoint in routes:
+            for method in [h for h in dir(routes[endpoint]) if h.startswith('on_')]:
+                h = Handler(app_uri.split(":")[1], method, app_uri.split(":")[0], endpoint)
+                self.handlers.append(h)
+                self.resources.add((app_uri.split(":")[0], app_uri.split(":")[1]))
+
+        self.template = Template(TEMPLATE)
 
     def filename(self):
         return re.sub('[/{}]', '_', self.uri_template) + '_' + self.method + '.zip'
 
-    def make_entry_function(self, module, obj):
+    def make_entry_functions(self, module, obj):
         with open(ENTRY_FILENAME, 'w') as entry:
-            entry.write(TEMPLATE.format(**{'module':module, 'object':obj, 'uri_template':self.uri_template, 'method':self.method}))
+            entry.write(self.template.render(resources=self.resources, handlers=self.handlers))
 
     def make_zip(self):
         with zipfile.ZipFile(os.path.join(BUILD_PATH, self.filename()), mode='w') as archive:
