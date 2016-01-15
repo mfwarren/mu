@@ -19,6 +19,27 @@ from mu import util
 from .package import Package, BUILD_PATH
 
 
+REQUEST_MAPPING_TEMPLATE = """
+{
+    "_app_modele" : "sample:api",
+    "_stage" : "$context.stage",
+    "_request_id" : "$context.requestId",
+    "_api_id" : "$context.apiId",
+    "_resource_path" : "$context.resourcePath",
+    "_resource_id" : "$context.resourceId",
+    "_http_method" : "$context.httpMethod",
+    "_source_ip" : "$context.identity.sourceIp",
+    "_user_agent" : "$context.identity.userAgent",
+    "_account_id" : "$context.identity.accountId",
+    "_api_key" : "$context.identity.apiKey",
+    "_caller" : "$context.identity.caller",
+    "_user" : "$context.identity.user",
+    "_user_arn" : "$context.identity.userArn",
+    "_params": "$input.params()"
+}
+"""
+
+
 class Deployment(object):
     """
     A Deployment is the collection of Packages along with the meta data required

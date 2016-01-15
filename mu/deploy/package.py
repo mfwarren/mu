@@ -15,8 +15,10 @@
 import zipfile
 import re
 import os
+import mu.handler
+import inspect
 
-from jinja2 import Template
+# from jinja2 import Template
 
 try:
     import zlib
@@ -26,22 +28,6 @@ except:
 
 ENTRY_FILENAME = '_generated.py'
 BUILD_PATH = './build'
-
-TEMPLATE = """
-{% for module, resources in resources %}
-from {module} import {resource}
-{% endfor %}
-from mu import Request, Response
-
-{% for handler in handlers %}
-def {handler.resource}_{handler.method}_handler(event, context):
-    request = Request()
-    response = Response()
-    api.routes['{handler.uri_template}'].{handler.method}(request, response)
-    return response.body
-
-{% endfor %}
-"""
 
 
 class Handler(object):
@@ -61,27 +47,14 @@ class Package(object):
     for uploading to Lambda.
     """
 
-    def __init__(self, routes, app_uri):
-
-        self.handlers = []
-        self.resources = set()
-
-        for endpoint in routes:
-            for method in [h for h in dir(routes[endpoint]) if h.startswith('on_')]:
-                h = Handler(app_uri.split(":")[1], method, app_uri.split(":")[0], endpoint)
-                self.handlers.append(h)
-                self.resources.add((app_uri.split(":")[0], app_uri.split(":")[1]))
-
-        self.template = Template(TEMPLATE)
+    def __init__(self, app_uri):
+        pass
 
     def filename(self):
-        return re.sub('[/{}]', '_', self.uri_template) + '_' + self.method + '.zip'
-
-    def make_entry_functions(self, module, obj):
-        with open(ENTRY_FILENAME, 'w') as entry:
-            entry.write(self.template.render(resources=self.resources, handlers=self.handlers))
+        return 'mu_handler.zip'
 
     def make_zip(self):
+        # TODO: zip in dependancies
         with zipfile.ZipFile(os.path.join(BUILD_PATH, self.filename()), mode='w') as archive:
             for dirpath, dirnames, filenames in os.walk('.'):
                 if dirpath.startswith(BUILD_PATH):

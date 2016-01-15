@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -
 #
-# This file is part of gunicorn released under the MIT license.
+# This file is part of mu released under the MIT license.
 # See the NOTICE for more information.
 
 import os
@@ -9,7 +9,7 @@ import sys
 from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
 
-from gunicorn import __version__
+from mu import __version__
 
 
 CLASSIFIERS = [
@@ -25,8 +25,7 @@ CLASSIFIERS = [
     'Topic :: Internet',
     'Topic :: Utilities',
     'Topic :: Software Development :: Libraries :: Python Modules',
-    'Topic :: Internet :: WWW/HTTP',
-    'Topic :: Internet :: WWW/HTTP :: Dynamic Content']
+    'Topic :: Internet :: WWW/HTTP']
 
 # read long description
 with open(os.path.join(os.path.dirname(__file__), 'README.rst')) as f:
@@ -53,7 +52,7 @@ class PyTestCommand(TestCommand):
         TestCommand.finalize_options(self)
         self.test_args = ['tests']
         if self.cov:
-            self.test_args += ['--cov', 'gunicorn']
+            self.test_args += ['--cov', 'mu']
         self.test_suite = True
 
     def run_tests(self):

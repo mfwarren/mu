@@ -12,6 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from mu import Request, Response
+from mu import util
+
+HTTP_METHODS = {'GET': 'on_get', 'POST': 'on_post'}
+
 
 class API(object):
 
@@ -25,6 +30,13 @@ class API(object):
         the resource path {username} represents a path parameter called 'username'.
         """
         self.routes[uri_template] = resource
+
+    def __call__(self, event, context):
+        request = Request()
+        response = Response()
+        api = util.import_app(event['_app_module'])
+        getattr(api.routes[event['_resource_path']], HTTP_METHODS[event['_http_method']])(request, response)
+        return response.body  # TODO: reformat to JSON for HTTP Headers
 
     # TODO:
     # def add_error_handler(self, exception, handler=None):

@@ -28,7 +28,6 @@ DEFAULT_MEDIA_TYPE = 'application/json; charset=utf-8'
 
 
 from mu.version import __version__  # NOQA
-from mu.api import API#, DEFAULT_MEDIA_TYPE  # NOQA
 # from mu.status_codes import *  # NOQA
 from mu.errors import *  # NOQA
 # from mu.redirects import *  # NOQA
@@ -38,3 +37,4 @@ from mu.util import *  # NOQA
 # from mu.hooks import before, after  # NOQA
 from mu.request import Request#, RequestOptions  # NOQA
 from mu.response import Response  # NOQA
+from mu.api import API#, DEFAULT_MEDIA_TYPE  # NOQA
