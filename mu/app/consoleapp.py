@@ -18,6 +18,7 @@ class ConsoleApplication(object):
     def run(self):
         self.app_uri = sys.argv[1]
         p = Package(self.app_uri)
+        p.build()
         p.make_zip()
 
 

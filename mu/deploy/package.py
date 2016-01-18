@@ -12,13 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import distutils.dir_util
 import zipfile
 import re
 import os
-import mu.handler
+import sys
+import shutil
 import inspect
 
 # from jinja2 import Template
+import mu
 
 try:
     import zlib
@@ -28,6 +31,7 @@ except:
 
 ENTRY_FILENAME = '_generated.py'
 BUILD_PATH = './build'
+DIST_PATH = './dist'
 
 
 class Handler(object):
@@ -53,12 +57,37 @@ class Package(object):
     def filename(self):
         return 'mu_handler.zip'
 
+    def build(self):
+        print("BUILDING ---->")
+        # TODO: copy all requirements into build directory
+        distutils.dir_util.copy_tree(os.path.dirname(mu.__file__), os.path.join(BUILD_PATH, 'mu'))
+
+        # copy project into build directory
+        for dirpath, dirnames, filenames in os.walk('.'):
+            if dirpath.startswith(BUILD_PATH) or dirpath.startswith(DIST_PATH):
+                continue
+            for file in filenames:
+                print(os.path.join(dirpath, file))
+                shutil.copy(os.path.join(dirpath, file), BUILD_PATH)
+                # distutils.dir_util.copy_tree(os.path.dirname(mu.__file__), BUILD_PATH)
+
+        print("BUILD FINISHED")
+
     def make_zip(self):
-        # TODO: zip in dependancies
-        with zipfile.ZipFile(os.path.join(BUILD_PATH, self.filename()), mode='w') as archive:
-            for dirpath, dirnames, filenames in os.walk('.'):
-                if dirpath.startswith(BUILD_PATH):
-                    continue
+        "zip up the build directory, place zip file in DIST directory"
+
+        print("CREATE ZIP")
+
+        # print(sys.path)
+        # print
+        # for p in sys.path:
+        #     print(p)
+        #     shutil.copytree(p, BUILD_PATH+'/', symlinks=False)
+
+        with zipfile.ZipFile(os.path.join(DIST_PATH, self.filename()), mode='w') as archive:
+            for dirpath, dirnames, filenames in os.walk(BUILD_PATH):
                 for file in filenames:
                     print(os.path.join(dirpath, file))
-                    archive.write(os.path.join(dirpath, file), compress_type=compression)
+                    archive.write(os.path.join(dirpath, file), os.path.join(dirpath, file).replace(BUILD_PATH, ''), compress_type=compression)
+
+        print("ZIP CREATED: %s" % os.path.join(DIST_PATH, self.filename()))
